@@ -1,0 +1,12 @@
+body {
+//    background: white url("images/scrollview.png") no-repeat right bottom;
+    background: url("images/scrollview.png"); 
+    color: white;
+}
+
+ul{ margin: 40px 0px }
+li{ 
+   padding-bottom: 10px;
+   font-size: 13pt;
+}
+a{ color: #ddf }
