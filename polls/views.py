@@ -36,7 +36,6 @@ class DetailView(generic.DetailView):
 
         response.set_cookie('test','YAYAY~', 5*60);
         return response;
-
     def get_queryset(self):
         """
         Excludes any polls that aren't published yet.
@@ -67,7 +66,7 @@ def detail(request, poll_id):
 #        poll = Poll.objects.get(pk=poll_id)
 #    except Poll.DoesNotExist:
 #        raise Http404
-#    poll = get_object_or_404(Poll, pk=poll_id)
+    poll = get_object_or_404(Poll, pk=poll_id)
     return render(request, 'detail.html', {'poll': poll})
 
 
