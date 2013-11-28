@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head><title>Gallery</title>
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'gallery/css/style.css' %}" />
+<script src="{% static 'gallery/js/jquery-1.10.2.min.js' %}"></script>
+<script>
+g_next = '/api/posts/get'
+var loading_tid, loading_txt = '...';
+var PostLoading=false;
+$.fn.loading = function( start )
+{  clearTimeout(loading_tid);
+   if( start==undefined ) start=true;
+   obj=$(this); PostLoading=start;
+   if( start )
+   {  loading_txt+='.'; if( loading_txt.length>3 ) loading_txt='.';
+      obj.text(loading_txt)
+      if( PostLoading ) loading_tid=setTimeout(function(){ obj.loading(); }, 1000);
+      else   obj.loading(false);
+   }
+   else  obj.text('...');
+};
+
+pobj_html = '<li class="g_photo"><img src=""/></li>'
+hot_scroe = 3000;
+function more_posts()
+{  if( g_next==null )  return;
+   more_obj.loading();
+   $.get(g_next, function(data,s,e){
+      g_next=data.next; posts=data.results;
+      postN = posts.length;
+      for( i=0; i<postN ; i++ )
+      {  post = posts[i];
+         p_obj = $(pobj_html);
+         p_obj.attr('pid',post.object_id);
+         img = p_obj.find('img:first');
+         img[0].src = post.image_url;
+         imgW=post.image_width; imgH=post.image_height;
+         fixH= 250/imgW * imgH;
+         if( fixH<200 )  img.attr('auto','width');
+         else  img.attr('auto','height');
+         gallery_obj.append(p_obj);
+      }
+      if( gbox_obj.scrollAtBottom() ) setTimeout( more_posts, 10 ); 
+      gallery_obj.append(more_obj);
+      more_obj.loading(false);
+   });
+}
+$.fn.scrollAtBottom = function()
+{  obj = $(this);
+   MaxScrollT = obj[0].scrollHeight-obj.css('height').replace('px','')-10;
+   if( obj[0].scrollTop>=MaxScrollT )  return true;
+   else   return false;
+};
+
+var gallery_obj, more_obj, gbox_obj;
+var NoOldPost=false;
+$(document).ready(function(){
+   gbox_obj = $("#gbox");
+   gallery_obj = $("#gallery");
+   more_obj = $("#more");
+   gbox_obj.scroll(function(){
+      if( !NoOldPost&&!PostLoading&&gbox_obj.scrollAtBottom() )
+         setTimeout( more_posts, 50 ); 
+   });
+   more_posts();
+});
+</script>
+</head>
+<body>
+<div id="gbox">
+<ul id="gallery"><li id="more">...</li></ul>
+</div>
+</body></html>
