@@ -74,7 +74,7 @@ def HTTP_GET(url):
         rsp['content'] = e.read()
     return rsp
 
-from fb_api_id_sec.secrect import *
+from secrect_fb_api_id_sec import *
 #Need fb_cid, fb_csec
 def getFBAccessToken():
     url = "https://graph.facebook.com/oauth/access_token?client_id="+fb_cid+"&client_secret="+fb_csec+"&grant_type=client_credentials"
