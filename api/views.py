@@ -31,35 +31,16 @@ def validateUrl( url ):
         valid = False
     return valid
 
-def savePostsToDB(posts):
-    for obj in posts['data']:
-        try:
-            try:
-                obj['object_id']
-            except:
-                obj['object_id'] = getObjectID( obj['id'] )
-            try:
-                obj['picture']
-            except:
-                continue
-
-            url = "http://graph.facebook.com/"+obj['object_id']+"?fields=source,height,width"
-            rsp = HTTP_GET( url )
-            if rsp['status']:
-                image = json.loads( rsp['content'] )
-                obj['image_url'] = image['source']
-                obj['image_width'] = image['width']
-                obj['image_height'] = image['height']
-            post = Post.objects.get(object_id=obj['object_id'])
-        except Post.DoesNotExist:
-            try:
-                if obj['image_url'] and obj['image_url']:
-                    post = Post()
-            except:
-                None
-
-        post.parseJSONObj(obj)
-        post.save()
+def ParseFBGraphAPIRsp(rsp):
+    apirsp = json.loads( rsp['content'] )
+    try:
+        error = apirsp['error']
+    except:
+        error = None
+    if error != None:
+        rsp['status'] = False
+        rsp['code'] = error['code'] if error['code'] else rsp['code']
+    return rsp
 
 def HTTP_GET(url):
     req = urllib2.Request(url)
@@ -73,6 +54,35 @@ def HTTP_GET(url):
         rsp['code'] = e.code
         rsp['content'] = e.read()
     return rsp
+
+def savePostsToDB(posts):
+    NEED_CREATE = False 
+    for obj in posts['data']:
+        try:
+            try:
+                obj['object_id']
+            except:
+                obj['object_id'] = getObjectID( obj['id'] )
+            try:
+                obj['picture']
+            except:
+                continue
+
+            url = "http://graph.facebook.com/"+obj['object_id']+"?fields=source,height,width"
+            rsp = ParseFBGraphAPIRsp( HTTP_GET(url) )
+            if rsp['status']:
+                image = json.loads( rsp['content'] )
+                obj['image_url'] = image['source']
+                obj['image_width'] = image['width']
+                obj['image_height'] = image['height']
+                NEED_CREATE = True
+            post = Post.objects.get(object_id=obj['object_id'])
+        except Post.DoesNotExist:
+            if NEED_CREATE:
+                post = Post()
+
+        post.parseJSONObj(obj)
+        post.save()
 
 from secrect_fb_api_id_sec import *
 #Need fb_cid, fb_csec
@@ -129,7 +139,7 @@ class PostsAPIView(APIView):
 
             until = request.GET.get('until')
             url = url+"&until="+str(int(until)-1) if until else url
-            rsp = HTTP_GET( url )
+            rsp = ParseFBGraphAPIRsp( HTTP_GET(url) )
             if not rsp['status']:
                 content = rsp['content']
                 statusCode = rsp['code']

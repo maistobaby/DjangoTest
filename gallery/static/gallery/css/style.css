@@ -6,26 +6,30 @@ body {
     background: #fffff3; 
     color: black;
 }
+ul { padding:0px }
 
 #gbox {
    width:100%; height:100%;
    overflow-y: auto;
 }
 #gallery {
-   width: 1015px;
+   width: 1020px;
    list-style: none;
-   margin:20px auto 0px; padding:0px;
+   margin:20px auto 0px;
+}
+.gside {
+   width: 50%;
+   display: inline-block;
+   float: left;
 }
 .g_photo { 
    width:250px; height:200px;
    display: inline-block;
-   margin: 0px 0px 5px 5px;
+   margin: 2.5px;
    overflow: hidden;
    box-shadow: 1px 1px 5px #aaa;
 }
-.g_photo:nth-child(4n+1) { 
-   margin-left: 0px;
-}
+.g_photo.hot { width:505px; height:405px }
 .g_photo img[auto="width"] { 
    width: auto;
    height: 100%;
@@ -41,5 +45,5 @@ body {
    line-height:13px; font-size:17pt;
    box-shadow: 0px 1px 5px #aaa;
    background: rgba(220,220,220,0.2);
-   margin: 10px auto;
+   margin: 30px auto 10px;
 }

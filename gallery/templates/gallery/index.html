@@ -22,7 +22,46 @@ $.fn.loading = function( start )
 };
 
 pobj_html = '<li class="g_photo"><img src=""/></li>'
-hot_scroe = 3000;
+hot_thr=3000, HOT_SIZE=4, NOR_SIZE=1;
+g_stat=[0,0], g_queue=[];
+function chooseSide(){ return ((g_stat[1]<g_stat[0])&&(g_stat[0]%2==0))? 1: 0; }
+function putOnSide( p_obj, p_size, g_side )
+{  gside_obj[g_side].append(p_obj);
+   g_stat[g_side] += p_size;
+   if( g_stat[0]==g_stat[1] ) g_stat=[0,0];
+}
+function putOnGallery( p_obj, hot_score, from_queue )
+{  
+   g_side = chooseSide();
+   g_side = ((g_stat[1]<g_stat[0])&&(g_stat[0]%2==0))? 1: 0;
+   if( g_stat[g_side]%2==0 && g_queue.length>0 )
+   {  putOnSide( g_queue.shift(), HOT_SIZE, g_side );
+      if( g_queue.length>0 )  putOnGallery( g_queue[0], hot_thr, 1 );
+      g_side = chooseSide();
+   }
+   if( from_queue )  return;
+
+   p_size = (hot_score>=hot_thr)? HOT_SIZE: NOR_SIZE;
+   if( p_size!=1 )
+   {   p_obj.addClass('hot');
+       if( g_stat[g_side]%2!=0 )
+       {  g_queue.push(p_obj);
+          return;
+       }
+   }
+   putOnSide( p_obj, p_size, g_side );
+}
+$.fn.initPhoto = function( post )
+{  p_obj = $(this);
+   p_obj.attr('pid',post.object_id);
+   img = p_obj.find('img:first');
+   img[0].src = post.image_url;
+   imgW=post.image_width; imgH=post.image_height;
+   fixH= 250/imgW * imgH;
+   if( fixH<200 )  img.attr('auto','width');
+   else  img.attr('auto','height');
+   return p_obj;
+}
 function more_posts()
 {  if( g_next==null )  return;
    more_obj.loading();
@@ -31,18 +70,10 @@ function more_posts()
       postN = posts.length;
       for( i=0; i<postN ; i++ )
       {  post = posts[i];
-         p_obj = $(pobj_html);
-         p_obj.attr('pid',post.object_id);
-         img = p_obj.find('img:first');
-         img[0].src = post.image_url;
-         imgW=post.image_width; imgH=post.image_height;
-         fixH= 250/imgW * imgH;
-         if( fixH<200 )  img.attr('auto','width');
-         else  img.attr('auto','height');
-         gallery_obj.append(p_obj);
+         p_obj = $(pobj_html).initPhoto(post);
+         putOnGallery( p_obj, post.hot_score );
       }
       if( gbox_obj.scrollAtBottom() ) setTimeout( more_posts, 10 ); 
-      gallery_obj.append(more_obj);
       more_obj.loading(false);
    });
 }
@@ -53,11 +84,12 @@ $.fn.scrollAtBottom = function()
    else   return false;
 };
 
-var gallery_obj, more_obj, gbox_obj;
+var gside_obj=[], more_obj, gbox_obj;
 var NoOldPost=false;
 $(document).ready(function(){
    gbox_obj = $("#gbox");
-   gallery_obj = $("#gallery");
+   gside_obj[0] = $(".gside[pos=left] ul");
+   gside_obj[1] = $(".gside[pos=right] ul");
    more_obj = $("#more");
    gbox_obj.scroll(function(){
       if( !NoOldPost&&!PostLoading&&gbox_obj.scrollAtBottom() )
@@ -66,9 +98,13 @@ $(document).ready(function(){
    more_posts();
 });
 </script>
-</head>
-<body>
+</head><body>
 <div id="gbox">
-<ul id="gallery"><li id="more">...</li></ul>
+<ul id="gallery">
+<li class="gside" pos="left"><ul></ul></li>
+<li class="gside" pos="right"><ul></ul></li>
+<li style="clear:both"></li>
+</ul>
+<div id="more">...</div>
 </div>
 </body></html>
