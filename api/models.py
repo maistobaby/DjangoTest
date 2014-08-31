@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import dateparse
 import datetime, time, re
+#from datetime import datetime
 
 # Create your models here.
 class Post(models.Model):
@@ -56,6 +57,8 @@ def existOrDefault(value, obj, keys):
 
 def strtotime(str):
     return dateparse.parse_datetime(str)
+#    format = '%Y-%m-%d %H:%M:%S'
+#    return datetime.strptime(str, format)
 
 def dtUnixTS(dt):
     return time.mktime(dt.utctimetuple())

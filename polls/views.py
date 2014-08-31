@@ -7,6 +7,7 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import render, get_object_or_404
 from django.views import generic
 from django.utils import timezone
+#from datetime import datetime
 
 from polls.models import Poll, Choice
 from django.core import serializers
@@ -19,6 +20,7 @@ class IndexView(generic.ListView):
 #        return Poll.objects.order_by('-pub_date')[:5]
         return Poll.objects.filter(
             pub_date__lte=timezone.now()
+#            pub_date__lte=datetime.now()
         ).order_by('-pub_date')[:5]
 
 class DetailView(generic.DetailView):
@@ -39,19 +41,20 @@ class DetailView(generic.DetailView):
         json_serializer = serializers.get_serializer("json")()
 #        json_serializer.serialize(poll, ensure_ascii=False, stream=response)
         data = serializers.serialize("json", poll)
-        response = HttpResponse(data, content_type="application/json; charset=UTF-8")
-        return response
+#        response = HttpResponse(data, content_type="application/json; charset=UTF-8")
+#        return response
 
         poll = Poll.objects.get(pk=pb)
         response = render(request, self.template_name, {'poll': poll, 'kwarg': kwarg, 'sdata':sdata, 'data':data } )
 
-        response.set_cookie('test','YAYAY~', 5*60);
+#        response.set_cookie('test','YAYAY~', 5*60);
         return response;
     def get_queryset(self):
         """
         Excludes any polls that aren't published yet.
         """
         return Poll.objects.filter(pub_date__lte=timezone.now())
+#        return Poll.objects.filter(pub_date__lte=datetime.now())
 
 class ResultsView(generic.DetailView):
     model = Poll

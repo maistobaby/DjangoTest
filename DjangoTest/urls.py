@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import url, patterns, include
+from django.conf.urls import url, patterns, include
 from django.contrib.auth.models import User, Group
 
 from rest_framework import viewsets, routers
